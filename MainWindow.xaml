@@ -1,0 +1,143 @@
+﻿<Window
+    x:Class="DragDropTreeViewIssue.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dd="urn:gong-wpf-dragdrop"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:DragDropTreeViewIssue.ViewModels"
+    Title="Drag Drop TreeView Issue"
+    Width="500"
+    Height="400"
+    d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <HierarchicalDataTemplate DataType="{x:Type viewModels:FolderViewModel}" ItemsSource="{Binding Files}">
+            <Grid Margin="8,0" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <iconPacks:PackIconMaterial
+                    VerticalAlignment="Center"
+                    Kind="{Binding Icon}"
+                    Opacity="0.7" />
+                <TextBlock
+                    Grid.Column="1"
+                    Margin="8,0,6,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:FileViewModel}">
+            <StackPanel Margin="25,0,0,0" Orientation="Horizontal">
+                <iconPacks:PackIconMaterial
+                    VerticalAlignment="Center"
+                    Kind="File"
+                    Opacity="0.7" />
+                <TextBlock
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+    <TreeView
+        dd:DragDrop.DropHandler="{Binding}"
+        dd:DragDrop.IsDragSource="True"
+        dd:DragDrop.IsDropTarget="True"
+        ItemsSource="{Binding Folders}">
+        <TreeView.ItemContainerStyle>
+            <Style TargetType="TreeViewItem">
+                <d:Style.DataContext>
+                    <viewModels:TreeViewModelBase />
+                </d:Style.DataContext>
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Rectangle
+                                    Name="Bg"
+                                    Fill="{TemplateBinding Background}"
+                                    Opacity="0.4" />
+                                <Border
+                                    Name="Bd"
+                                    Grid.Row="0"
+                                    Background="Transparent"
+                                    SnapsToDevicePixels="True">
+                                    <ContentPresenter
+                                        Name="PART_Header"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        Content="{TemplateBinding Header}"
+                                        ContentSource="Header"
+                                        ContentStringFormat="{TemplateBinding HeaderStringFormat}"
+                                        ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                                <ToggleButton
+                                    Name="Expander"
+                                    Grid.Row="0"
+                                    Height="24"
+                                    Cursor="Hand"
+                                    Focusable="False"
+                                    IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ToggleButton.Style>
+                                        <Style TargetType="{x:Type ToggleButton}">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                        <Rectangle Fill="Transparent" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+                                <ItemsPresenter
+                                    Name="ItemsHost"
+                                    Grid.Row="1"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsExpanded}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
+                                </MultiDataTrigger>
+                                <DataTrigger Binding="{Binding CanAcceptChildren}" Value="False">
+                                    <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+                                    <!--<Setter Property="dd:DragDrop.CanTreeViewItemAcceptChildren" Value="False" />-->
+                                </DataTrigger>
+                                <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bg" Property="Fill" Value="DodgerBlue" />
+                                </Trigger>
+                                <Trigger SourceName="Expander" Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bg" Property="Fill" Value="DodgerBlue" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Bg" Property="Fill" Value="DodgerBlue" />
+                                    <Setter TargetName="Bg" Property="Opacity" Value="0.7" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </TreeView.ItemContainerStyle>
+    </TreeView>
+</Window>
